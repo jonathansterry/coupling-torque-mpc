@@ -1,1 +1,0 @@
-# coupling-torque-mpc
