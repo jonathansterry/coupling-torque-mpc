@@ -1,0 +1,65 @@
+# This file shows the optimization developed using CVXGEN. The accompanying files that were built by CVXGEN are not included.
+
+
+# Produced by CVXGEN, 2017-09-26 15:54:32 -0400.
+# CVXGEN is Copyright (C) 2006-2017 Jacob Mattingley, jem@cvxgen.com.
+# The code in this file is Copyright (C) 2006-2017 Jacob Mattingley.
+# CVXGEN, or solvers produced by CVXGEN, cannot be used for commercial
+# applications without prior written permission from Jacob Mattingley.
+
+# Filename: description.cvxgen.
+# Description: A description of the CVXGEN problem.
+
+# Produced by CVXGEN, 2017-06-22 16:23:10 -0400.
+# CVXGEN is Copyright (C) 2006-2012 Jacob Mattingley, jem@cvxgen.com.
+# The code in this file is Copyright (C) 2006-2012 Jacob Mattingley.
+# CVXGEN, or solvers produced by CVXGEN, cannot be used for commercial
+# applications without prior written permission from Jacob Mattingley.
+
+# Filename: description.cvxgen.
+# Description: A description of the CVXGEN problem.
+
+dimensions
+  m = 2   # input
+  n = 4     # states
+  T = 25    # control horizon
+  Ty = 35   # prediction horizon
+end
+
+parameters
+  Q (1,1) psd nonnegative  # cost on theta error
+  R (1,1) psd nonnegative  # cost on theta dot
+  S (1,1) psd nonnegative  # ideal stiffness weight
+  V (m,m) psd nonnegative  # cost on changing pdes
+  A (n,n)
+  B (n,m)
+  x[0] (n)                 # initial state
+  u_last (m)               # input at previous time
+  x_last (n)               # previous state
+  p_max nonnegative
+  p_min nonnegative
+  p_target nonnegative
+  x_goal
+  dint
+  dstrb (n)
+  tP(m)
+end
+
+variables
+  x[t] (n), t=1..Ty+1  # predicted states
+  u[t] (m), t=0..T     # result of the optimization
+end
+
+minimize
+  sum[t=1..Ty+1]( quad(x_goal-x[t][2] + dint,Q) ) + sum[t=1..T]( quad(u[t][1]-p_target, S) + quad(u[t][2]-p_target, S) + quad(u[t] - u[t-1], V) ) + quad(u[0]-u_last, V) 
+
+subject to
+  x[t+1] == A*x[t] + B*(u[t] + tP) + dstrb, t=0..T
+  x[t+1] == A*x[t] + B*(u[T] + tP) + dstrb, t=T+1..Ty
+
+  u[t][1] <= p_max, t=0..T
+  u[t][2] <= p_max, t=0..T
+  u[t][1] >= p_min, t=0..T
+  u[t][2] >= p_min, t=0..T
+
+end
