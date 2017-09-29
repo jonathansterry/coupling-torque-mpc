@@ -371,7 +371,6 @@ class MPC_control():
 
         M = np.matrix(self.M(dyn_params, self.q_all))
         M = M.reshape(self.njts, self.njts)
-        M = I
         cor = np.matrix(self.c(dyn_params, self.q_all, self.q_dot_all))
         cor = np.diag(cor)
 
